@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
-from models import QuestionRequest
 from auth import verify_token, create_access_token
 
 
