@@ -27,3 +27,4 @@ def verify_token(token: str = Depends(oauth2_scheme)):
             detail="Token inválido ou expirado",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
