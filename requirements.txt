@@ -2,3 +2,6 @@ sentence-transformers
 fastapi
 qdrant-client
 python-dotenv
+uvicorn
+python-jose
+python-multipart
