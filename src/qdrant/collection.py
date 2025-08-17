@@ -7,10 +7,9 @@ import os
 load_dotenv()
 
 class QdrantCollection:
-    def __init__(self, collection_name: str = "courses"):
+    def __init__(self):
         self.QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
         self.API_KEY = os.getenv("QDRANT_API_KEY")
-        self.COLLECTION_NAME = collection_name
         self.EMBEDDING_DIM = 768
         self.client = QdrantClient(
             url=self.QDRANT_URL,
@@ -19,7 +18,7 @@ class QdrantCollection:
         )
 
 
-    def create_collection(self) -> None:
+    def create_collection(self, name_collection) -> None:
         collection_config = {
             "vectors_config": VectorParams(
                 size=self.EMBEDDING_DIM,
@@ -44,17 +43,12 @@ class QdrantCollection:
             }
         }
 
-        try:
-            self.client.create_collection(
-                collection_name=self.COLLECTION_NAME,
-                **collection_config
-            )
-            print(f"Collection '{self.COLLECTION_NAME}' created with multilingual settings!")
+        self.client.create_collection(
+            collection_name=name_collection,
+            **collection_config
+        )
 
-        except Exception as e:
-            print(f"Error creating collection: {str(e)}")
-            raise
+        return f"Collection '{name_collection}' created with multilingual settings!"
 
-
-    def collection_info(self) -> dict:
-        return self.client.get_collection(self.COLLECTION_NAME)
+    def collection_info(self, name_collection) -> dict:
+        return self.client.get_collection(name_collection)
