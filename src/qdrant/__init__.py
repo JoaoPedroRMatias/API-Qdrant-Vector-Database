@@ -1,1 +1,1 @@
-from .qdrant_utils import *
+from .embeddings import Qdrant

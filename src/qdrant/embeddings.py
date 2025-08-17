@@ -5,16 +5,13 @@ import uuid
 import os
 from typing import List, Dict, Optional
 from functools import lru_cache
-from dotenv import load_dotenv
-from pprint import pprint
+from config import QDRANT_URL, API_KEY
 
 
-load_dotenv()
-
-class QdrantEmbedding:
+class Qdrant:
     def __init__(self, collection_name: str = "courses"):
-        self.QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-        self.API_KEY = os.getenv("QDRANT_API_KEY")
+        self.QDRANT_URL = os.getenv(QDRANT_URL)
+        self.API_KEY = os.getenv(API_KEY)
         self.COLLECTION_NAME = collection_name
         self.client = QdrantClient(
             url=self.QDRANT_URL,
