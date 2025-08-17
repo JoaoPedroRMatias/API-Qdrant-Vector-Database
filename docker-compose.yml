@@ -8,6 +8,7 @@ services:
       - "6333:6333"
       - "6334:6334"
     environment:
+      # ALTERAR PARA A CHAVE PESSOAL OU PRODUÇÂO, ESSA ABAIXO É ALEATÓRIA PARA TESTES
       QDRANT__SERVICE__API_KEY: "aaeeb6c3364c1fffb24593338cfee39f"
     volumes:
       - ./qdrant_storage:/qdrant/storage
