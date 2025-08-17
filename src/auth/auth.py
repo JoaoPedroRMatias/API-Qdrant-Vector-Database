@@ -18,7 +18,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username != "doctor":
+        if username != "user":
             raise HTTPException(status_code=401, detail="Usuário inválido")
         return username
     except JWTError:

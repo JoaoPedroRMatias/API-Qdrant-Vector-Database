@@ -1,1 +1,1 @@
-from .login import LoginRequest
+from .name_collection import NameCollection

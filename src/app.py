@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
 from auth import verify_token, create_access_token
 from qdrant import Qdrant
+from models import NameCollection
 
 
 app = FastAPI()
@@ -20,17 +21,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
 
-@app.get("/status")
+@app.get("/status", dependencies=[Depends(verify_token)])
 def get_status(username: str = Depends(verify_token)):
     return {"status": "ok", "user": username}
 
 
-@app.post("/collection/create")
-def process_item(item: Item, username: str = Depends(verify_token)):
+@app.post("/collection/create", dependencies=[Depends(verify_token)])
+def process_item(name_collection: NameCollection):
     return {
-        "status": "received",
-        "user": username,
-        "name": item.name,
-        "value": item.value,
-        "double": item.value * 2
+        "status": "true",
+        "name": name_collection.name_collection,
     }
