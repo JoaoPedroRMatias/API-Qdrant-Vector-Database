@@ -8,8 +8,22 @@ services:
       - "6333:6333"
       - "6334:6334"
     environment:
-      # ALTERAR PARA A CHAVE PESSOAL OU PRODUÇÂO, ESSA ABAIXO É ALEATÓRIA PARA TESTES
+      # ALTERAR PARA A CHAVE PESSOAL OU PRODUÇÃO
       QDRANT__SERVICE__API_KEY: "aaeeb6c3364c1fffb24593338cfee39f"
     volumes:
       - ./qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  fastapi:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "9090:9090"
+    environment:
+      QDRANT_URL: "http://qdrant:6333"  
+      QDRANT_API_KEY: "aaeeb6c3364c1fffb24593338cfee39f"
+    depends_on:
+      - qdrant
+    volumes:
+      - .:/app  
     restart: unless-stopped
