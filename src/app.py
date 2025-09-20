@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
 from auth import verify_token, create_access_token
-from qdrant import Qdrant, QdrantCollection
-from models import NameCollection
-
+from qdrant import Qdrant, QdrantCollection, Qdrant
+from models import NameCollection, DocumentCreate
+import traceback
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -32,8 +32,12 @@ def get_status():
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
-
+        tb = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
+        )
+    
 
 # COLLECTIONS ROUTES
 @app.post("/collection/create", dependencies=[Depends(verify_token)])
@@ -51,8 +55,12 @@ def process_item(name_collection: NameCollection):
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
-
+        tb = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
+        )
+    
 
 @app.post("/collection/info", dependencies=[Depends(verify_token)])
 def process_item(name_collection: NameCollection):
@@ -68,4 +76,28 @@ def process_item(name_collection: NameCollection):
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+        tb = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
+        )
+
+
+# EMBEDDINGS ROUTES
+@app.post("/embedding/create", dependencies=[Depends(verify_token)])
+def process_item(document_create: DocumentCreate):
+    try:
+        title = document_create.title
+        description = document_create.description
+
+        q_embedding = Qdrant()
+        data = q_embedding.add_document(title, description)
+
+        return data
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
+        )

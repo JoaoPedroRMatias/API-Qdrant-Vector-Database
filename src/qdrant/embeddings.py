@@ -9,9 +9,9 @@ from config import QDRANT_URL, API_KEY
 
 
 class Qdrant:
-    def __init__(self, collection_name: str = "courses"):
-        self.QDRANT_URL = os.getenv(QDRANT_URL)
-        self.API_KEY = os.getenv(API_KEY)
+    def __init__(self, collection_name: str = "documents"):
+        self.QDRANT_URL = QDRANT_URL
+        self.API_KEY = API_KEY
         self.COLLECTION_NAME = collection_name
         self.client = QdrantClient(
             url=self.QDRANT_URL,
@@ -37,14 +37,13 @@ class Qdrant:
         ).tolist()
 
 
-    def add_course(self, title: str, description: str, metadata: Optional[Dict] = None) -> dict:
+    def add_document(self, title, description, metadata: Optional[Dict] = None) -> dict:
         full_text = f"{title} - {description}"
         vector = self._generate_embedding(full_text)
-
+        
         payload = {
             "title": title,
-            "description": description,
-            "full_text": full_text,
+            "description": description
         }
 
         if metadata:
