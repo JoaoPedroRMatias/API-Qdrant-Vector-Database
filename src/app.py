@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
 from auth import verify_token, create_access_token
 from qdrant import Qdrant, QdrantCollection, Qdrant
-from models import NameCollection, DocumentCreate
+from models import NameCollection, DocumentCreate, DocumentSearch
 import traceback
 
 app = FastAPI()
@@ -92,6 +92,25 @@ def process_item(document_create: DocumentCreate):
 
         q_embedding = Qdrant()
         data = q_embedding.add_document(title, description)
+
+        return data
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
+        )
+    
+
+@app.post("/embedding/search", dependencies=[Depends(verify_token)])
+def process_item(document_search: DocumentSearch):
+    try:
+        query = document_search.query
+        limit = document_search.limit
+
+        q_embedding = Qdrant()
+        data = q_embedding.search(query, limit)
 
         return data
 

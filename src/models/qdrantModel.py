@@ -7,3 +7,7 @@ class NameCollection(BaseModel):
 class DocumentCreate(BaseModel):
     title: str
     description: str
+
+class DocumentSearch(BaseModel):
+    query: str
+    limit: int

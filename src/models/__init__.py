@@ -1,1 +1,1 @@
-from .qdrantModel import NameCollection, DocumentCreate
+from .qdrantModel import NameCollection, DocumentCreate, DocumentSearch
