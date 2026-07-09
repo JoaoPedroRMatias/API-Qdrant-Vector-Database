@@ -4,7 +4,10 @@ from datetime import timedelta
 from core.auth import verify_token, create_access_token
 from qdrant import QdrantCollection, Qdrant
 from core.models import NameCollection, DocumentCreate, DocumentSearch
-import traceback
+from config.settings import AUTH_USERNAME, AUTH_PASSWORD
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -13,7 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 # TEST AND AUTH ROUTES
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if form_data.username == "user" and form_data.password == "123456":
+    if form_data.username == AUTH_USERNAME and form_data.password == AUTH_PASSWORD:
         access_token = create_access_token(
             data={"sub": form_data.username},
             expires_delta=timedelta(minutes=30)
@@ -31,12 +34,9 @@ def get_status():
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
-        )
+    except Exception:
+        logger.exception("Erro interno")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 
 # COLLECTIONS ROUTES
@@ -54,12 +54,9 @@ def create_collection(name_collection: NameCollection):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
-        )
+    except Exception:
+        logger.exception("Erro interno")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 
 @router.post("/collection/info", dependencies=[Depends(verify_token)])
@@ -73,12 +70,9 @@ def get_collection_info(name_collection: NameCollection):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Nome inválido: {e}")
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
-        )
+    except Exception:
+        logger.exception("Erro interno")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 
 # EMBEDDINGS ROUTES
@@ -93,12 +87,9 @@ def create_embedding(document_create: DocumentCreate):
 
         return {"error": False, "message": "Embedding created successfully!"}
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
-        )
+    except Exception:
+        logger.exception("Erro interno")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
 
 
 @router.post("/embedding/search", dependencies=[Depends(verify_token)])
@@ -112,9 +103,6 @@ def search_embedding(document_search: DocumentSearch):
 
         return data
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro interno: {str(e)}\nTraceback:\n{tb}"
-        )
+    except Exception:
+        logger.exception("Erro interno")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
