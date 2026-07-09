@@ -5,5 +5,5 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-QDRANT_URL = "http://qdrant:6333"
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 API_KEY = os.getenv("QDRANT_API_KEY")

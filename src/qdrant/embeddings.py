@@ -1,11 +1,29 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, Filter, SearchParams, RecommendStrategy
-from sentence_transformers import SentenceTransformer
-import uuid
+from fastembed import TextEmbedding
+import numpy as np
 import os
+import uuid
 from typing import List, Dict, Optional
 from functools import lru_cache
-from config import QDRANT_URL, API_KEY
+from config.settings import QDRANT_URL, API_KEY
+
+# Modelo carregado uma vez por processo, nao por instancia/request.
+# cache_dir fixo evita rebaixar o modelo (~1GB) a cada restart do container.
+_MODEL = TextEmbedding(
+    model_name="sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+    cache_dir=os.getenv("FASTEMBED_CACHE_DIR", ".fastembed_cache")
+)
+
+
+@lru_cache(maxsize=10000)
+def _generate_embedding(text: str) -> List[float]:
+    cleaned_text = ' '.join(text.strip().split())
+    vector = next(_MODEL.embed([cleaned_text]))
+    norm = np.linalg.norm(vector)
+    if norm > 0:
+        vector = vector / norm
+    return vector.tolist()
 
 
 class Qdrant:
@@ -19,27 +37,10 @@ class Qdrant:
             prefer_grpc=True
         )
 
-        self.model = SentenceTransformer(
-            "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
-            device="cpu"
-        )
-
-
-    @lru_cache(maxsize=10000)
-    def _generate_embedding(self, text: str) -> List[float]:
-        cleaned_text = ' '.join(text.strip().split())
-        return self.model.encode(
-            cleaned_text,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            batch_size=32,
-            show_progress_bar=False
-        ).tolist()
-
 
     def add_document(self, title, description, metadata: Optional[Dict] = None) -> dict:
         full_text = f"{title} - {description}"
-        vector = self._generate_embedding(full_text)
+        vector = _generate_embedding(full_text)
         
         payload = {
             "title": title,
@@ -62,16 +63,16 @@ class Qdrant:
         )
 
 
-    def search(self, query: str, limit: int = 2, score_threshold: float = None, filter_conditions: Optional[Dict] = None) -> List[Dict]:
-        query_vector = self._generate_embedding(query)
+    def search(self, query: str, limit: int = 1, score_threshold: float = None, filter_conditions: Optional[Dict] = None) -> List[Dict]:
+        query_vector = _generate_embedding(query)
         qdrant_filter = None
 
         if filter_conditions:
             qdrant_filter = Filter(**filter_conditions)
 
-        search_result = self.client.search(
+        search_result = self.client.query_points(
             collection_name=self.COLLECTION_NAME,
-            query_vector=query_vector,
+            query=query_vector,
             query_filter=qdrant_filter,
             limit=limit,
             score_threshold=score_threshold,
@@ -79,7 +80,7 @@ class Qdrant:
                 hnsw_ef=128,
                 exact=False
             )
-        )
+        ).points
 
         return [
             {

@@ -1,22 +1,18 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
-from dotenv import load_dotenv
-import os
+from config.settings import QDRANT_URL, API_KEY
 
-
-load_dotenv()
 
 class QdrantCollection:
     def __init__(self):
-        self.QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-        self.API_KEY = os.getenv("QDRANT_API_KEY")
+        self.QDRANT_URL = QDRANT_URL
+        self.API_KEY = API_KEY
         self.EMBEDDING_DIM = 768
         self.client = QdrantClient(
             url=self.QDRANT_URL,
             api_key=self.API_KEY,
             timeout=30
         )
-
 
     def create_collection(self, name_collection) -> None:
         collection_config = {
@@ -50,5 +46,9 @@ class QdrantCollection:
 
         return f"Collection '{name_collection}' created with multilingual settings!"
 
-    def collection_info(self, name_collection) -> dict:
-        return self.client.get_collection(name_collection)
+    def collection_info(self, name_collection):
+        try:
+            return {"error": False, "collection": self.client.get_collection(name_collection)}
+
+        except Exception:
+            return {"error": True, "message": f"Collection '{name_collection}' not found!"}

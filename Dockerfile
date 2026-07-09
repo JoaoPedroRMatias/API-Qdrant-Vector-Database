@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app:/app/src
 EXPOSE 9090
 
-CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "9090", "--reload"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "9090", "--reload"]

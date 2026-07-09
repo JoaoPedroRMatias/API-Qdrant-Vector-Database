@@ -43,6 +43,9 @@ pip-delete-this-directory.txt
 # Qdrant
 qdrant_storage/
 
+# fastembed model cache
+.fastembed_cache/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
